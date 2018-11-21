@@ -2,7 +2,7 @@
 
 # Script to download and install Corda Open Source Binaries from Testnet
 # Example:
-#   ./install.sh 93.184.216.3 6d21186f-3f67-41ce-887e-eff6415126c0 10001 GB "Milton Keynes"
+#   ./install.sh 93.184.216.3 10001 6d21186f-3f67-41ce-887e-eff6415126c0 GB "Milton Keynes"
 
 set -euo pipefail
 
