@@ -88,6 +88,22 @@
       "MaxValue": "49151",
       "Default": "10000",
       "ConstraintDescription": "must be a valid RFC6335 user port"
+    },
+    "Country": {
+      "Description": "The country the business entity operating the node is domiciled in",
+      "Type": "String",
+      "MinLength": "2",
+      "MaxLength": "2",
+      "AllowedPattern": "^[ -~]*$",
+      "ConstraintDescription": "Must be a two lettered country code as per ISO-3166 alpha-2"
+    },
+    "Locality": {
+      "Description": "The locality the business entity operating the node is domiciled in",
+      "Type": "String",
+      "MinLength": "2",
+      "MaxLength": "64",
+      "AllowedPattern": "^[ -~]*$",
+      "ConstraintDescription": "Must be a string describing the locality consisting of printable ASCII characters only"
     }
   },
   "Mappings": {
