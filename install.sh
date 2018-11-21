@@ -58,6 +58,7 @@ sudo -H -u corda unzip /opt/corda/corda.zip 2> /dev/null || error "Unable to unz
 sudo sed -i "s/.*p2pAddress.*/\    \"p2pAddress\" : \"$PUBLIC_IP:$P2P_PORT\",/" ${NODE_CONFIG_FILE}
 
 # Install upstart Service
+# FIXME `setuid corda` will fail since the version of upstart deployed to Amazon Linux is too old.
 sudo tee /etc/init/corda.conf > /dev/null <<EOF
 description "Corda"
 
