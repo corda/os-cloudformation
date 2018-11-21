@@ -32,7 +32,7 @@ sudo yum -y remove java-1.7.0-openjdk
 
 # Create User
 sudo groupadd corda
-sudo adduser --gid corda --system --no-create-home --gid corda corda
+sudo adduser --gid corda --system --no-create-home corda
 
 # Create Directories
 sudo mkdir -p ${INSTALL_DIR}
