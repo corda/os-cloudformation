@@ -19,3 +19,5 @@ aws cloudformation create-stack \
     --template-body file:///Users/moritzplatt/Projects/os-aws/os.json \
     --parameters  ParameterKey=KeyName,ParameterValue=ostest ParameterKey=TestnetKey,ParameterValue=52412ec6-4db9-4958-b11c-ebc8dcf69d8a
 ```
+
+After creation, the stack can be inspected using the [CloudFormation UI](https://eu-west-2.console.aws.amazon.com/cloudformation/home).
