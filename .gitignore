@@ -1,0 +1,12 @@
+# IntelliJ
+.idea/
+*.iws
+
+# Mac OS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+[Dd]esktop.ini
