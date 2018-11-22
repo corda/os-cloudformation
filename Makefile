@@ -2,6 +2,7 @@
 CF_TEMPLATE=os.json
 CF_UPDATED=os-updated.template
 OTK=
+SSH_KEY=
 COUNTRY=GB
 LOCALITY="Milton Keynes"
 
@@ -15,7 +16,7 @@ test: os-updated.template
          --stack-name ostest \
          --template-body file://$$(pwd)/$(CF_UPDATED) \
          --parameters \
-         	ParameterKey=KeyName,ParameterValue=waldemar.zurowski \
+         	ParameterKey=KeyName,ParameterValue=$(SSH_KEY) \
          	ParameterKey=TestnetKey,ParameterValue=$(OTK) \
          	ParameterKey=Locality,ParameterValue=$(LOCALITY) \
          	ParameterKey=Country,ParameterValue=$(COUNTRY)
