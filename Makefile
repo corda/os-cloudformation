@@ -4,17 +4,17 @@ CF_UPDATED=os-updated.template
 OTK=
 SSH_KEY=
 COUNTRY=GB
-LOCALITY="Milton Keynes"
+LOCALITY="London"
 STACK=corda
 IP=$$(aws cloudformation describe-stacks --stack-name $(STACK) --query 'Stacks[].Outputs[?OutputKey==`InstanceIPAddress`].OutputValue' --output text)
 EC2ID=$$(aws cloudformation describe-stacks --stack-name $(STACK) --query 'Stacks[].Outputs[?OutputKey==`InstanceId`].OutputValue' --output text)
 
 .PHONY: all test clean ssh userdata test-install-script
 
-all: clean test
+all: clean create-stack
 
-test: os-updated.template
-	@echo "Creating CF stack"
+create-stack: os-updated.template
+	@echo "Creating CF stack for Corda Node installation"
 	@aws cloudformation create-stack \
          --stack-name $(STACK) \
          --template-body file://$$(pwd)/$(CF_UPDATED) \
@@ -23,8 +23,12 @@ test: os-updated.template
          	ParameterKey=TestnetKey,ParameterValue=$(OTK) \
          	ParameterKey=Locality,ParameterValue=$(LOCALITY) \
          	ParameterKey=Country,ParameterValue=$(COUNTRY)
-	@echo -n "The EC2 instance ID is: "
-	@aws cloudformation describe-stacks --stack-name $(STACK) --query 'Stacks[].Outputs[?OutputKey==`InstanceId`].OutputValue' --output text
+	@echo -n "The EC2 instance ID is: " $(EC2ID)
+
+delete-stack:
+	@echo "Deleting CF stack for Corda Node installation"
+	@aws cloudformation delete-stack \
+         --stack-name $(STACK)
 
 userdata:
 	@aws ec2 describe-instance-attribute --attribute userData --instance-id $(EC2ID) --query 'UserData.Value' --output text | base64 -d -
