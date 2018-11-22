@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "AWS CloudFormation Template to provision Corda Open Source 3 to AWS.",
+  "Description": "Operates a Corda Open Source node that connects to \"Testnet\"",
   "Parameters": {
     "InstanceType": {
       "Description": "Corda Server instance type",
@@ -555,9 +555,6 @@
         }
       },
       "Metadata": {
-        "AWS::CloudFormation::Designer": {
-          "id": "3093dc32-79d9-4bea-b1e6-f3529d405bf3"
-        }
       }
     },
     "InstanceSecurityGroup": {
@@ -576,27 +573,21 @@
           {
             "IpProtocol": "tcp",
             "FromPort": {
-              "Ref": "IPAddress"
+              "Ref": "P2PPort"
             },
             "ToPort": {
-              "Ref": "IPAddress"
+              "Ref": "P2PPort"
             },
             "CidrIp": "0.0.0.0/0"
           }
         ]
       },
       "Metadata": {
-        "AWS::CloudFormation::Designer": {
-          "id": "e1b248ed-9163-4a70-abca-344b189556c7"
-        }
       }
     },
     "IPAddress": {
       "Type": "AWS::EC2::EIP",
       "Metadata": {
-        "AWS::CloudFormation::Designer": {
-          "id": "46e7f19e-7a4b-47d1-8e7f-48c53b4fb933"
-        }
       }
     },
     "IPAssoc": {
@@ -610,9 +601,6 @@
         }
       },
       "Metadata": {
-        "AWS::CloudFormation::Designer": {
-          "id": "41bb3f55-87f5-4d9b-be12-c592cc288f11"
-        }
       }
     }
   },
