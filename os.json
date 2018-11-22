@@ -592,7 +592,7 @@
                       "\n",
                       "# Script to download and install Corda Open Source Binaries from Testnet\n",
                       "# Example:\n",
-                      "#   ./install.sh 93.184.216.3 6d21186f-3f67-41ce-887e-eff6415126c0 10001 GB \"Milton Keynes\"\n",
+                      "#   ./install.sh 93.184.216.3 10001 6d21186f-3f67-41ce-887e-eff6415126c0 GB \"Milton Keynes\"\n",
                       "\n",
                       "set -euo pipefail\n",
                       "\n",
@@ -655,7 +655,7 @@
                       "\n",
                       "respawn\n",
                       "chdir /opt/corda\n",
-                      "# Amazon Linux comes with an old version of upstart and `setuid` is missing\n",
+                      "# FIXME `setuid corda` will fail since the version of upstart deployed to Amazon Linux is too old.\n",
                       "# setuid corda\n",
                       "exec su -s /bin/sh -c 'exec \"$0\" \"$@\"' corda -- java -Xmx2048m -jar /opt/corda/corda.jar\n",
                       "EOF\n",
@@ -814,14 +814,10 @@
             "CidrIp": "0.0.0.0/0"
           }
         ]
-      },
-      "Metadata": {
       }
     },
     "IPAddress": {
-      "Type": "AWS::EC2::EIP",
-      "Metadata": {
-      }
+      "Type": "AWS::EC2::EIP"
     },
     "IPAssoc": {
       "Type": "AWS::EC2::EIPAssociation",
@@ -832,8 +828,6 @@
         "EIP": {
           "Ref": "IPAddress"
         }
-      },
-      "Metadata": {
       }
     }
   },
