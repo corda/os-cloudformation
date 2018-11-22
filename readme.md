@@ -18,7 +18,7 @@ A stack can be created locally using the [AWS CLI](https://aws.amazon.com/cli/):
 ```bash
 aws cloudformation create-stack \
     --stack-name corda \
-    --template-body file://"$(pwd)/os.json \
+    --template-body file://$(pwd)/os.json \
     --parameters \
         ParameterKey=KeyName,ParameterValue=mykey \
         ParameterKey=InstanceType,ParameterValue=t2.large \
