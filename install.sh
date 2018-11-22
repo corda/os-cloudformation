@@ -1,4 +1,4 @@
-#!/bin/bash -xe
+#!/bin/bash -e
 
 # Script to download and install Corda Open Source Binaries from Testnet
 # Example:
@@ -7,11 +7,11 @@
 set -euo pipefail
 
 # Parameters
-PUBLIC_IP=$1
-P2P_PORT=$2
-TESTNET_KEY=$3
-COUNTRY=$4
-LOCALITY=$5
+PUBLIC_IP="$1"
+P2P_PORT="$2"
+TESTNET_KEY="$3"
+COUNTRY="$4"
+LOCALITY="$5"
 
 # Constants
 INSTALL_DIR="/opt/corda"
@@ -27,24 +27,23 @@ error() {
 }
 
 # Install Java 8
-sudo yum -y install java-1.8.0
-sudo yum -y remove java-1.7.0-openjdk
+test $(rpm -qa java-1.8.0\* | wc -l) -gt 0 || sudo yum -y install java-1.8.0
+test $(rpm -qa java-1.7.0-openjdk\* | wc -l) -eq 0 || sudo yum -y remove java-1.7.0-openjdk
 
 # Create User
-sudo groupadd corda
-sudo adduser --gid corda --system --no-create-home corda
+getent group corda &> /dev/null || sudo groupadd corda
+getent passwd corda &> /dev/null || sudo adduser --gid corda --system --no-create-home corda
 
 # Create Directories
 sudo mkdir -p ${INSTALL_DIR}
 sudo chown corda:corda ${INSTALL_DIR}
-sudo su corda
 sudo -H -u corda mkdir -p "$INSTALL_DIR/cordapps"
 sudo -H -u corda mkdir -p "$INSTALL_DIR/certificates"
 sudo -H -u corda mkdir -p "$INSTALL_DIR/drivers"
 cd ${INSTALL_DIR}
 
 # Obtain Binaries
-sudo -H -u corda curl -vLs \
+test -f "$INSTALL_DIR/corda.zip" || sudo -H -u corda curl -vLs \
     -d "{\"x500Name\":{\"locality\":\"$LOCALITY\",\"country\":\"$COUNTRY\"},\"configType\":\"$CORDA_CONFIG\",\"distribution\":\"$CORDA_DISTRIBUTION\"}" \
     -H "Content-Type: application/json" \
     -A "curl/AWS CloudFormation" \
@@ -52,25 +51,30 @@ sudo -H -u corda curl -vLs \
     -o "$INSTALL_DIR/corda.zip" || error "Unable to download config template and truststore"
 
 # Inflate Binaries
-sudo -H -u corda unzip /opt/corda/corda.zip 2> /dev/null || error "Unable to unzip generated node bundle; was the correct one time download key used?"
+test -f "${INSTALL_DIR}/corda.jar" || sudo -H -u corda unzip "${INSTALL_DIR}/corda.zip" # 2> /dev/null || (cat "$INSTALL_DIR/corda.zip"; rm -f "$INSTALL_DIR/corda.zip"; error "Unable to unzip generated node bundle; was the correct one time download key used?")
 
 # Patch Configuration File by replacing the line containing the default P2P address
 sudo sed -i "s/.*p2pAddress.*/\    \"p2pAddress\" : \"$PUBLIC_IP:$P2P_PORT\",/" ${NODE_CONFIG_FILE}
 
 # Install upstart Service
-# FIXME `setuid corda` will fail since the version of upstart deployed to Amazon Linux is too old.
-sudo tee /etc/init/corda.conf > /dev/null <<EOF
+sudo tee /etc/init/corda.conf > /dev/null << 'EOF'
 description "Corda"
 
 start on runlevel [2345]
 stop on runlevel [!2345]
 
 respawn
-setuid corda
 chdir /opt/corda
-exec java -Xmx2048m -jar /opt/corda/corda.jar
+# FIXME `setuid corda` will fail since the version of upstart deployed to Amazon Linux is too old.
+# setuid corda
+exec su -s /bin/sh -c 'exec "$0" "$@"' corda -- java -Xmx2048m -jar /opt/corda/corda.jar
 EOF
 sudo chmod 644 /etc/init/corda.conf
 
 # Start the Service
-sudo start corda
+if [ $(sudo initctl list | grep corda | grep running | wc -l) -eq 0 ]
+then
+    sudo initctl start corda
+else
+    sudo initctl restart corda
+fi

@@ -10,3 +10,6 @@
 # Windows
 Thumbs.db
 [Dd]esktop.ini
+
+# Temporary files
+/os-updated.template
