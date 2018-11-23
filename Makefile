@@ -44,4 +44,5 @@ clean:
 	@rm -f $(CF_UPDATED)
 
 test-install-script:
-	cat install.sh | ssh -t ec2-user@$(IP) "sudo bash -c 'cat - > /usr/local/bin/corda-install.sh'; /usr/local/bin/corda-install.sh $(IP) 10000 $(OTK) $(COUNTRY) '$(LOCALITY)'"
+	@echo "Testing the install.sh script"
+	@cat install.sh | ssh -t ec2-user@$(IP) "sudo bash -c 'cat - > /usr/local/bin/corda-install.sh'; /usr/local/bin/corda-install.sh $(IP) 10000 $(OTK) $(COUNTRY) '$(LOCALITY)'"
