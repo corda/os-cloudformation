@@ -1,11 +1,16 @@
 # Automate manipulation of the CloudFormation template and testing of the stack a little bit
 CF_TEMPLATE=os.json
 CF_UPDATED=os-updated.template
-OTK=
+# a silly way to allow two different names to provide Testnet key
+OTK=$(ONE_TIME_DOWNLOAD_KEY)
+ONE_TIME_DOWNLOAD_KEY=
+# the SSh key name configured in the AWS EC2
 SSH_KEY=
+# input required during initial Corda node installation
 COUNTRY=GB
 LOCALITY="London"
 STACK=corda
+# macros
 IP=$$(aws cloudformation describe-stacks --stack-name $(STACK) --query 'Stacks[].Outputs[?OutputKey==`InstanceIPAddress`].OutputValue' --output text)
 EC2ID=$$(aws cloudformation describe-stacks --stack-name $(STACK) --query 'Stacks[].Outputs[?OutputKey==`InstanceId`].OutputValue' --output text)
 
