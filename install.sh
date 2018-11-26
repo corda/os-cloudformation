@@ -1,6 +1,8 @@
 #!/bin/bash -e
 
 # Script to download and install Corda Open Source Binaries from Testnet
+# This scripts expects Java has been installed already
+#
 # Example:
 #   ./install.sh 93.184.216.3 10001 6d21186f-3f67-41ce-887e-eff6415126c0 GB "Milton Keynes"
 
@@ -20,41 +22,11 @@ TESTNET_URL="https://testnet.corda.network"
 CORDA_CONFIG="DEFAULT"
 CORDA_DISTRIBUTION="OPENSOURCE"
 
-# The location and MD5 checksum of the RPM with Azul JDK8
-AZUL_JDK_URL="https://cdn.azul.com/zulu/bin/zulu8.31.0.1-jdk8.0.181-linux.x86_64.rpm"
-AZUL_JDK_MD5="2d8cd30085d03d04f29e829e85416c77 "
-
 # Exits the process with a status indicating error
 error() {
     echo "$(date +'%Y-%m-%d %H:%M:%S') [ERROR] $@" >> /dev/stderr
     exit 1
 }
-
-#
-# Install an external RPM and check if the MD5 checksum of the downloaded RPM matches the expected one
-#
-# Example: install-external-rpm https://example.com/package.rpm 12345678901234567890123456789012
-#
-install-external-rpm() {
-    local url="$1"
-    local checksum="$2"
-    local file=$(basename "${url}")
-
-    curl -Ls \
-        -A "curl/AWS CloudFormation" \
-        --retry 5 \
-        -o "/tmp/${file}" \
-      "${url}"
-    echo "${checksum} /tmp/${file}" | md5sum -c -
-    sudo yum install -y "/tmp/${file}"
-    rm /tmp/"${file}"
-}
-
-
-# Install Azul Java 8
-test $(rpm -qa java-1.8.0\* | wc -l) -gt 0 || install-external-rpm "${AZUL_JDK_URL}" "${AZUL_JDK_MD5}"
-test $(rpm -qa java-1.8.0-openjdk\* | wc -l) -eq 0 || sudo yum remove -y java-1.8.0-openjdk
-test $(rpm -qa java-1.7.0-openjdk\* | wc -l) -eq 0 || sudo yum remove -y java-1.7.0-openjdk
 
 # Create User
 getent group corda &> /dev/null || sudo groupadd corda

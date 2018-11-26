@@ -13,10 +13,11 @@ STACK=corda
 # macros
 IP=$$(aws cloudformation describe-stacks --stack-name $(STACK) --query 'Stacks[].Outputs[?OutputKey==`InstanceIPAddress`].OutputValue' --output text)
 EC2ID=$$(aws cloudformation describe-stacks --stack-name $(STACK) --query 'Stacks[].Outputs[?OutputKey==`InstanceId`].OutputValue' --output text)
+AMIID=$$(grep -E 'message, +amazon-ebs: AMI:'  packer-build.* | sed -e 's/.*\(ami-*\)/\1/')
 
-.PHONY: all test clean ssh userdata test-install-script
+.PHONY: all test clean ssh userdata test-install-script ami
 
-all: clean create-stack
+all: clean create-stack ami
 
 create-stack: os-updated.template
 	@echo "Creating CF stack for Corda Node installation"
@@ -51,3 +52,14 @@ clean:
 test-install-script:
 	@echo "Testing the install.sh script"
 	@cat install.sh | ssh -t ec2-user@$(IP) "sudo bash -c 'cat - > /usr/local/bin/corda-install.sh'; /usr/local/bin/corda-install.sh $(IP) 10000 $(OTK) $(COUNTRY) '$(LOCALITY)'"
+
+test-zulu-install-script:
+	@echo "Testing the install-zulu-jdk.sh script"
+	@cat install-zulu-jdk.sh | ssh -t ec2-user@$(IP) "sudo bash -c 'cat - > /tmp/zulu.sh; chmod a+x /tmp/zulu.sh'; /tmp/zulu.sh -v"
+
+ami: packer-build.log
+	@echo "Getting the ID of created AMI from the Packer build log:" $(AMIID)
+
+packer-build.log: packer-template.json install-zulu-jdk.sh install.sh
+	@echo "Creating a new AMI with Packer"
+	@packer build -machine-readable packer-template.json 2>packer-build.err | tee -a packer-build.log

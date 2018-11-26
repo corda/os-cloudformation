@@ -13,3 +13,4 @@ Thumbs.db
 
 # Temporary files
 /os-updated.template
+/packer-build.*
