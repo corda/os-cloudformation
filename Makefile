@@ -41,9 +41,9 @@ userdata:
 ssh:
 	@ssh ec2-user@$(IP)
 
-$(CF_UPDATED): $(CF_TEMPLATE) install.sh
-	@echo "Updating the CF template with the install.sh"
-	@./update-cf-template.sh $(CF_TEMPLATE) install.sh >$(CF_UPDATED)
+$(CF_UPDATED): $(CF_TEMPLATE) packer-build.log
+	@echo "Updating the CF template with the AMI ID"
+	@jq '.Mappings.AWSRegionArch2AMI["eu-west-2"].HVM64 = $$AMI' --arg AMI $(AMIID) $(CF_TEMPLATE) >$(CF_UPDATED)
 
 clean:
 	@echo "Removing temporary files"
@@ -62,4 +62,4 @@ ami: packer-build.log
 
 packer-build.log: packer-template.json install-zulu-jdk.sh install.sh
 	@echo "Creating a new AMI with Packer"
-	@packer build -machine-readable packer-template.json 2>packer-build.err | tee -a packer-build.log
+	@packer build -machine-readable packer-template.json 2>packer-build.err | tee packer-build.log
