@@ -13,7 +13,7 @@ STACK=corda
 # macros
 IP=$$(aws cloudformation describe-stacks --stack-name $(STACK) --query 'Stacks[].Outputs[?OutputKey==`InstanceIPAddress`].OutputValue' --output text)
 EC2ID=$$(aws cloudformation describe-stacks --stack-name $(STACK) --query 'Stacks[].Outputs[?OutputKey==`InstanceId`].OutputValue' --output text)
-AMIID=$$(grep -E 'message, +amazon-ebs: AMI:'  packer-build.* | sed -e 's/.*\(ami-*\)/\1/')
+AMIID=$$(grep -E 'message, +amazon-ebs: AMI:'  packer-build.log | sed -e 's/.*\(ami-*\)/\1/')
 
 .PHONY: all test clean ssh userdata test-install-script ami
 
