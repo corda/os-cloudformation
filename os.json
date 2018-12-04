@@ -447,7 +447,7 @@
         "HVMG2": "ami-0a7c483d527806435"
       },
       "eu-west-2": {
-        "HVM64": "ami-f976839e",
+        "HVM64": "ami-0cc08b31166f328a7",
         "HVMG2": "NOT_SUPPORTED"
       },
       "eu-west-3": {
