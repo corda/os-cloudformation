@@ -46,6 +46,13 @@
     {
       "type": "shell",
       "script": "./install-zulu-jdk.sh"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "sudo find /root/.*history /home/*/.*history -exec rm -f {} \\; 2>/dev/null || true",
+        "sudo find / -name authorized_keys -exec rm -f {} \\;"
+      ]
     }
   ]
 }
