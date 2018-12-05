@@ -14,6 +14,8 @@ STACK=corda
 IP=$$(aws cloudformation describe-stacks --stack-name $(STACK) --query 'Stacks[].Outputs[?OutputKey==`InstanceIPAddress`].OutputValue' --output text)
 EC2ID=$$(aws cloudformation describe-stacks --stack-name $(STACK) --query 'Stacks[].Outputs[?OutputKey==`InstanceId`].OutputValue' --output text)
 AMIID=$$(grep -E 'message, +amazon-ebs: AMI:'  packer-build.log | sed -e 's/.*\(ami-*\)/\1/')
+# constants
+AWS_REGION=us-east-1
 
 .PHONY: all test clean ssh userdata test-install-script ami
 
@@ -21,7 +23,7 @@ all: clean create-stack ami
 
 create-stack: os-updated.template
 	@echo "Creating CF stack for Corda Node installation"
-	@aws cloudformation create-stack \
+	@aws --region=$(AWS_REGION) cloudformation create-stack \
          --stack-name $(STACK) \
          --template-body file://$$(pwd)/$(CF_UPDATED) \
          --parameters \
@@ -29,21 +31,21 @@ create-stack: os-updated.template
          	ParameterKey=TestnetKey,ParameterValue=$(OTK) \
          	ParameterKey=Locality,ParameterValue=$(LOCALITY) \
          	ParameterKey=Country,ParameterValue=$(COUNTRY)
-	@echo -n "The EC2 instance ID is: " $(EC2ID)
+	@echo -n "The EC2 instance ID in the region $(AWS_REGION) is: " $(EC2ID)
 
 delete-stack:
 	@echo "Deleting CF stack for Corda Node installation"
-	@aws cloudformation delete-stack \
+	@aws --region=$(AWS_REGION) cloudformation delete-stack \
          --stack-name $(STACK)
 
 userdata:
-	@aws ec2 describe-instance-attribute --attribute userData --instance-id $(EC2ID) --query 'UserData.Value' --output text | base64 -d -
+	@aws --region=$(AWS_REGION) ec2 describe-instance-attribute --attribute userData --instance-id $(EC2ID) --query 'UserData.Value' --output text | base64 -d -
 ssh:
 	@ssh ec2-user@$(IP)
 
 $(CF_UPDATED): $(CF_TEMPLATE) packer-build.log
 	@echo "Updating the CF template with the AMI ID"
-	@jq '.Mappings.AWSRegionArch2AMI["eu-west-2"].HVM64 = $$AMI' --arg AMI $(AMIID) $(CF_TEMPLATE) >$(CF_UPDATED)
+	@jq '.Mappings.AWSRegionArch2AMI[$$AWS_REGION].HVM64 = $$AMI' --arg AMI $(AMIID) $(CF_TEMPLATE) --arg AWS_REGION $(AWS_REGION) >$(CF_UPDATED)
 
 clean:
 	@echo "Removing temporary files"
@@ -62,4 +64,4 @@ ami: packer-build.log
 
 packer-build.log: packer-template.json install-zulu-jdk.sh install.sh
 	@echo "Creating a new AMI with Packer"
-	@packer build -machine-readable packer-template.json 2>packer-build.err | tee packer-build.log
+	@packer build -machine-readable -var "aws_region=$(AWS_REGION)" packer-template.json 2>packer-build.err | tee packer-build.log
