@@ -17,11 +17,12 @@ AMIID=$$(grep -E 'message, +amazon-ebs: AMI:'  packer-build.log | sed -e 's/.*\(
 # constants
 AWS_REGION=us-east-1
 
-.PHONY: all test clean ssh userdata test-install-script ami
+.PHONY: all release test clean ssh userdata test-install-script ami
 
 all: clean create-stack ami
+release: clean-all release-ami $(CF_UPDATED) ami
 
-create-stack: os-updated.template
+create-stack: $(CF_UPDATED)
 	@echo "Creating CF stack for Corda Node installation"
 	@aws --region=$(AWS_REGION) cloudformation create-stack \
          --stack-name $(STACK) \
@@ -51,6 +52,10 @@ clean:
 	@echo "Removing temporary files"
 	@rm -f $(CF_UPDATED)
 
+clean-all: clean
+	@echo "Removing packer logs, too"
+	@rm -f packer-build.log
+
 test-install-script:
 	@echo "Testing the install.sh script"
 	@cat install.sh | ssh -t ec2-user@$(IP) "sudo bash -c 'cat - > /usr/local/bin/corda-install.sh'; /usr/local/bin/corda-install.sh $(IP) 10000 $(OTK) $(COUNTRY) '$(LOCALITY)'"
@@ -65,3 +70,7 @@ ami: packer-build.log
 packer-build.log: packer-template.json install-zulu-jdk.sh install.sh
 	@echo "Creating a new AMI with Packer"
 	@packer build -machine-readable -var "aws_region=$(AWS_REGION)" packer-template.json 2>packer-build.err | tee packer-build.log
+
+release-ami:
+	@echo "Creating a new release AMI with Packer"
+	@packer build -machine-readable -var "aws_region=$(AWS_REGION)" -var "image_version=$$(date +'%Y%m%d')" packer-template.json 2>packer-build.err | tee packer-build.log
